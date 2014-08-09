@@ -1,0 +1,22 @@
+{
+  "name": "simple-syntax",
+  "version": "0.0.0",
+  "homepage": "https://github.com/timse/simple-syntax",
+  "authors": [
+    "Tim Sebastian <tim.sebastian@gmail.com>"
+  ],
+  "description": "simple syntax highlighter for html documents (incl. inline css and javascript)",
+  "main": "dist/simple-syntax.js",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "README.md",
+    "package.json",
+    "karma.conf.coffee",
+    "Gruntfile.coffee",
+    "src",
+    "static",
+    "node_modules",
+    "test"
+  ]
+}
