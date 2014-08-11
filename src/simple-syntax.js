@@ -1,11 +1,11 @@
 var SimpleSyntax;
 
 SimpleSyntax = (function() {
-  var attributesRegexp, doubleQuotePattern, esc, javascriptRegexps, matchToSpan, singleQuotePattern, tagsRegexp, textAreaHelper;
+  var attributesRegexp, cssSelectorRegexp, cssValueRegexp, doubleQuotePattern, esc, javascriptRegexps, matchToSpan, singleQuotePattern, tagsRegexp, textAreaHelper;
 
-  singleQuotePattern = "(?:\"(?:\\\\.|[^\"])*\")";
+  singleQuotePattern = "(?:'(?:\\\\.|[^'])*')";
 
-  doubleQuotePattern = "(?:'(?:\\\\.|[^'])*')";
+  doubleQuotePattern = "(?:\"(?:\\\\.|[^\"])*\")";
 
 
   /*
@@ -48,9 +48,13 @@ SimpleSyntax = (function() {
      */
     constructor: /\b(new)\s*([^\s\(])+\b/,
     regexp: /\/(?:\\.|[^\/])+\//,
-    number: /\d(?:\.\d+)?/,
+    number: /\b\d(?:\.\d+)?\b/,
     keywords: /\b(case|break|continue|do|undefined|null|void|delete|tyepof|instanceof|with|for|while|var|function|throw|return|if|else|switch)\b/
   };
+
+  cssSelectorRegexp = RegExp("([^{]+)(\\{)((?:" + singleQuotePattern + "|" + doubleQuotePattern + "|(?:[^{}]|\\\\.)*|(?:\\{(?:\\\\.|[^}])*\\}))*)(\\})", "g");
+
+  cssValueRegexp = /(\s*[^:]+\s*)(:)([^;\n]+)(\n|;)?/g;
 
   textAreaHelper = document.createElement('textarea');
 
@@ -113,6 +117,56 @@ SimpleSyntax = (function() {
     }
   };
 
+  SimpleSyntax.prototype.renderCss = function(css) {
+    var renderCssBlob, renderCssValueBlob;
+    renderCssValueBlob = function(valueBlob) {
+      return valueBlob.replace(cssValueRegexp, function(all, key, colon, value, end) {
+        var res;
+        res = "";
+        res += matchToSpan(key, '#999');
+        res += matchToSpan(colon, 'blue');
+        res += matchToSpan(value, 'green');
+        if (end != null) {
+          res += matchToSpan(end, '#ababab');
+        }
+        return res;
+      });
+    };
+    renderCssBlob = function(cssBlob) {
+      return cssBlob.replace(cssSelectorRegexp, (function(_this) {
+        return function(all, selector, openingBracket, content, closingBracket) {
+          var contentHtml, res;
+          contentHtml = "";
+          if (selector.search(/\s*@/) === 0) {
+            console.log(arguments);
+            contentHtml += renderCssBlob(content);
+          } else if (!/^\s*$/.test(content)) {
+            contentHtml = content.replace(cssValueRegexp, function(all, key, colon, value, end) {
+              var res;
+              res = "";
+              res += matchToSpan(key, '#999');
+              res += matchToSpan(colon, 'blue');
+              res += matchToSpan(value, 'green');
+              if (end != null) {
+                res += matchToSpan(end, '#ababab');
+              }
+              return res;
+            });
+          } else {
+            contentHtml = content;
+          }
+          res = "";
+          res += matchToSpan(selector, 'DarkRed');
+          res += matchToSpan(openingBracket, 'black');
+          res += contentHtml;
+          res += matchToSpan(closingBracket, 'black');
+          return res;
+        };
+      })(this));
+    };
+    return renderCssBlob(css);
+  };
+
   SimpleSyntax.prototype.renderHtml = function(str) {
     return str.replace(tagsRegexp, (function(_this) {
       return function(all, opening, tagname, attributes, ending, content) {
@@ -124,10 +178,10 @@ SimpleSyntax = (function() {
           args.splice(1, 10);
         }
         all = args[0], opening = args[1], tagname = args[2], attributes = args[3], ending = args[4], content = args[5];
-        res = "";
         attributeHtml = "";
         if (attributes != null) {
           attributeHtml = attributes.replace(attributesRegexp, function(attrib, name, equals, value) {
+            var res;
             res = "";
             res += matchToSpan(name, 'blue');
             if (equals != null) {
@@ -139,12 +193,15 @@ SimpleSyntax = (function() {
             return res;
           });
         }
+        res = "";
         res += matchToSpan(opening, 'green');
         res += matchToSpan(tagname, 'green');
         res += attributeHtml;
         res += matchToSpan(ending, 'green');
         if (tagname === 'script' && opening === '<') {
           res += _this.renderJavascript(content);
+        } else if (tagname === 'style' && opening === '<') {
+          res += _this.renderCss(content);
         } else {
           res += matchToSpan(content, 'gray');
         }
