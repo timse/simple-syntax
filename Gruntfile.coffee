@@ -60,6 +60,15 @@ module.exports = (grunt) ->
           'src/*.js'
         ]
         dest: 'dist/<%= pkg.name %>.js'
+      example:
+        banner: "x",
+        stripBanners: "true",
+        src:  [
+          'examples/selfie-precode.tmpl'
+          'src/simple-syntax.js'
+          'examples/selfie-postcode.tmpl'
+        ]
+        dest: 'examples/selfie.html'
 
     uglify:
       options:
