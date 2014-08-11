@@ -1,8 +1,8 @@
 
 class SimpleSyntax
 
-    singleQuotePattern = """(?:"(?:\\\\.|[^"])*")""" # value within "-quotes
-    doubleQuotePattern = """(?:'(?:\\\\.|[^'])*')""" # value within '-quotes
+    singleQuotePattern = """(?:'(?:\\\\.|[^'])*')""" # value within '-quotes
+    doubleQuotePattern = """(?:"(?:\\\\.|[^"])*")""" # value within "-quotes
 
     ###
     # imagine the following html:
