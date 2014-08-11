@@ -140,7 +140,7 @@ class SimpleSyntax
 
     constructor: (options)->
 
-    # ugly non performant recursive way to highlight javascript
+    # ugly non performant way to highlight javascript
     # \o/
     renderJavascript: (js)->
         # we check step by step
@@ -190,6 +190,48 @@ class SimpleSyntax
                 # set new searchPointer
                 searchPointer += renderedJsString.length
 
+    # ugly non performant way to highlight javascript
+    # \o/
+    renderCss: (css)->
+        # we check step by step
+
+        renderCssValueBlob = (valueBlob)->
+            valueBlob.replace cssValueRegexp, (all, key, colon, value, end)->
+                res = ""
+                res += matchToSpan(key, '#999')
+                res += matchToSpan(colon, 'blue')
+                res += matchToSpan(value, 'green')
+                res += matchToSpan(end, '#ababab') if end?
+                return res
+
+        renderCssBlob = (cssBlob)->
+            cssBlob.replace cssSelectorRegexp, (all, selector, openingBracket, content, closingBracket)=>
+
+                contentHtml = ""
+                if selector.search(/\s*@/) is 0
+                    console.log arguments
+                    contentHtml += renderCssBlob(content)
+                else if !/^\s*$/.test content
+                    contentHtml = content.replace cssValueRegexp, (all, key, colon, value, end)->
+                        res = ""
+                        res += matchToSpan(key, '#999')
+                        res += matchToSpan(colon, 'blue')
+                        res += matchToSpan(value, 'green')
+                        res += matchToSpan(end, '#ababab') if end?
+                        return res
+                else
+                    contentHtml = content
+
+                res = ""
+                res += matchToSpan(selector, 'DarkRed')
+                res += matchToSpan(openingBracket, 'black')
+                res += contentHtml
+                res += matchToSpan(closingBracket, 'black')
+
+                return res
+
+        return renderCssBlob(css)
+
 
     renderHtml: (str)->
 
@@ -203,7 +245,6 @@ class SimpleSyntax
 
             [all, opening, tagname, attributes, ending, content] = args
 
-            res = ""
             attributeHtml = ""
 
             if attributes?
@@ -214,12 +255,15 @@ class SimpleSyntax
                     res += matchToSpan(value, 'red') if value?
                     return res
 
+            res = ""
             res += matchToSpan(opening, 'green')
             res += matchToSpan(tagname, 'green')
             res += attributeHtml
             res += matchToSpan(ending, 'green')
             if tagname is 'script' and opening is '<'
                 res += @renderJavascript(content)
+            else if tagname is 'style' and opening is '<'
+                res += @renderCss(content)
             else
                 res += matchToSpan(content, 'gray')
 
