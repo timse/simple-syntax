@@ -94,12 +94,41 @@ class SimpleSyntax
         ///
 
         number: ///
-            \d(?:\.\d+)? # number either a digit or a decimal
+            \b\d(?:\.\d+)?\b # number either a digit or a decimal
         ///
 
         keywords: ///
             \b(case|break|continue|do|undefined|null|void|delete|tyepof|instanceof|with|for|while|var|function|throw|return|if|else|switch)\b # a bunch of reserved words for javascript
         ///
+
+    cssSelectorRegexp = ///
+        ([^{]+) #any selector
+        (\{) #opening brackets
+            ( #the content
+                (?:
+                    #{singleQuotePattern} # value within '-quotes
+                    |
+                    #{doubleQuotePattern} # value within "-quotes
+                    |
+                    (?:[^{}]|\\.)* #anything but a '- or "-quote or a closing bracket (this should
+                    |
+                    (?:\{(?:\\.|[^}])*\}) # value within '-quotes
+                )*
+            )
+        (\}) #closing brackets
+
+    ///g
+
+    cssValueRegexp = ///
+        (
+            \s*
+            [^:]+ # the key
+            \s*
+        )
+        (:) # the colon
+        ([^;\n]+) # the value
+        (\n|;)? # the end
+    ///g
 
     textAreaHelper = document.createElement('textarea')
     esc = (str)->
